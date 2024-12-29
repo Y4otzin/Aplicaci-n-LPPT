@@ -1,1 +1,83 @@
-https://github.com/Y4otzin/Aplicaci-n-LPPT/issues/1
+const inquirer = require('inquirer');
+const fs = require('fs');                       
+class Perfil {                                    constructor(nombre, dimensiones, costoPorMetro) {                                                 this.nombre = nombre;
+    this.dimensiones = dimensiones;                 this.costoPorMetro = costoPorMetro;
+  }                                             }
+                                                class Vidrio {
+  constructor(tipo, espesor, costoPorMetroCuadrado) {
+    this.tipo = tipo;                               this.espesor = espesor;
+    this.costoPorMetroCuadrado = costoPorMetroCuadrado;
+  }                                             }
+                                                const perfiles = [
+  new Perfil('28x28', '28x28mm', 15),             new Perfil('45x45', '45x45mm', 20),
+];                                              
+const vidrios = [                                 new Vidrio('Flotado', 4, 200),
+  new Vidrio('Laminado', 6, 300),                 new Vidrio('Tintex', 6, 440),
+];                                              
+const costos = {                                  riel: 50 / 1000,
+  jambaConMosquitero: 85 / 1000,                  jamba: 77 / 1000,
+  zoclo: 96 / 1000,                               cabezal: 43 / 1000,
+  cercoChapa: 65 / 1000,                          traslape: 79 / 1000,
+  verticalMosquitero: 43 / 1000,                  horizontalMosquitero: 40 / 1000,
+  vidrio: 300 / 1000000,                          felpa: 1 / 1000,
+  vinil: 6 / 1000,                                telaMosquitero: 50 / 1000000,
+  carretilla: 20,                                 carretillaMosquitero: 12,
+  carretillaFleje: 18,                            jaladeraEmb: 80,
+  jaladeraContraPlana: 24,                        adaptadorMosquitero: 25 /1000,
+};                                              
+async function calcularVentana() {                const respuestas = await inquirer.prompt([
+    {                                                 type: 'number',
+      name: 'ancho',                                  message: 'Ingrese el ancho de la ventana en milímetros:',                                     },
+    {                                                 type: 'number',
+      name: 'alto',                                   message: 'Ingrese el alto de la ventana en milímetros:',                                      },
+    {                                                 type: 'list',
+      name: 'perfil',                                 message: 'Seleccione el perfil:',
+      choices: perfiles.map(perfil => perfil.nombre),
+    },                                              {
+      type: 'list',                                   name: 'vidrio',
+      message: 'Seleccione el tipo de vidrio:',       choices: vidrios.map(vidrio => vidrio.tipo),                                                  },
+    {                                                 type: 'confirm',
+      name: 'guardarReporte',                         message: '¿Desea guardar un reporte de los cálculos?',                                        },
+  ]);                                           
+  const { ancho, alto, perfil: nombrePerfil, vidrio: tipoVidrio, guardarReporte } = respuestas;
+                                                  const perfilSeleccionado = perfiles.find(perfil => perfil.nombre === nombrePerfil);             const vidrioSeleccionado = vidrios.find(vidrio => vidrio.tipo === tipoVidrio);                
+  const riel = ancho;                             const jambaConMosquitero = ancho;
+  const jamba = alto - 26;                        const zoclo = Math.floor((ancho - 185) / 2);
+  const cabezal = zoclo;                          const cercoChapa1 = alto - 30;
+  const cercoChapa2 = alto - 40;                  const traslape1 = alto - 30;
+  const traslape2 = alto - 40;                    const verticalMosquitero = alto - 20;           const horizontalMosquitero = Math.floor((ancho - 25) / 2);                                      const adaptadorMosquitero = ancho;                                                              const vidrioAncho = Math.floor((ancho - 145) / 2);
+  const vidrioAltoFijo = alto - 125;              const vidrioAltoCorredizo = alto - 135;
+                                                  const perimetro = 2 * (ancho + alto);
+  const felpa = perimetro * 3;                    const vinil = perimetro * 2;
+                                                  const areaTelaMosquitero = jambaConMosquitero * verticalMosquitero;                           
+  const materiales = [                              { nombre: 'Riel', medida: riel, precio: riel * costos.riel },                                   { nombre: 'Adaptador Mosquitero', medida: adaptadorMosquitero, precio: adaptadorMosquitero * costos.adaptadorMosquitero },
+    { nombre: 'Jamba con Mosquitero', medida: jambaConMosquitero, precio: jambaConMosquitero * costos.jambaConMosquitero },                         { nombre: 'Jamba', medida: jamba * 2, precio: jamba * 2 * costos.jamba },                       { nombre: 'Zoclo', medida: zoclo * 2, precio: zoclo * 2 * costos.zoclo },                       { nombre: 'Cabezal', medida: cabezal * 2, precio: cabezal * 2 * costos.cabezal },               { nombre: 'Cerco Chapa 1', medida: cercoChapa1, precio: cercoChapa1 * costos.cercoChapa },      { nombre: 'Cerco Chapa 2', medida: cercoChapa2, precio: cercoChapa2 * costos.cercoChapa },      { nombre: 'Traslape 1', medida: traslape1, precio: traslape1 * costos.traslape },               { nombre: 'Traslape 2', medida: traslape2, precio: traslape2 * costos.traslape },               { nombre: 'Vertical Mosquitero', medida: verticalMosquitero * 2, precio: verticalMosquitero * 2 * costos.verticalMosquitero },
+    { nombre: 'Horizontal Mosquitero', medida: horizontalMosquitero * 2, precio: horizontalMosquitero * 2 * costos.horizontalMosquitero },          { nombre: 'Vinil', medida: vinil, precio: vinil * costos.vinil },                               { nombre: 'Felpa', medida: felpa, precio: felpa * costos.felpa },                             ];
+                                                   const herrajes = [
+    { nombre: 'Vidrio Fijo', cantidad: 1, precio: (vidrioAncho / 1000) * (vidrioAltoFijo / 1000) * vidrioSeleccionado.costoPorMetroCuadrado, medida: `${vidrioAncho}x${vidrioAltoFijo}` },
+    { nombre: 'Vidrio Corredizo', cantidad: 1, precio: (vidrioAncho / 1000) * (vidrioAltoCorredizo / 1000) * vidrioSeleccionado.costoPorMetroCuadrado, medida: `${vidrioAncho}x${vidrioAltoCorredizo}` },                                           { nombre: 'Carretillas', cantidad: 2, precio: 2 * costos.carretilla },                          { nombre: 'Carretillas Mosquitero', cantidad: 2, precio: 2 * costos.carretillaMosquitero },     { nombre: 'Carretillas Fleje', cantidad: 2, precio: 2 * costos.carretillaFleje },               { nombre: 'Jaladera Embutir', cantidad: 1, precio: costos.jaladeraEmb },                        { nombre: 'Jaladera Contra Plana', cantidad: 1, precio: costos.jaladeraContraPlana },         ];
+                                                  let totalMateriales = 0;
+  materiales.forEach((item) => {                    console.log(`${item.nombre.padEnd(25)}\t${item.medida}\t$${Math.round(item.precio)}`);          totalMateriales += item.precio;
+  });                                           
+  console.log('------------------------------------------------------------');
+  console.log(`Total Materiales:\t\t\t\t$${Math.round(totalMateriales)}`);
+                                                  let totalHerrajes = 0;
+  herrajes.forEach((item) => {                      if (item.medida) {
+      console.log(`${item.nombre.padEnd(25)}\t${item.medida}\t${item.cantidad}\t$${Math.round(item.precio)}`);                                      } else {
+      console.log(`${item.nombre.padEnd(25)}\t\t${item.cantidad}\t$${Math.round(item.precio)}`);
+    }                                               totalHerrajes += item.precio;
+  });                                                                                             console.log('------------------------------------------------------------');                    console.log(`Total Herrajes y Vidrios:\t\t\t$${Math.round(totalHerrajes)}`);                  
+  const totalGeneral = totalMateriales + totalHerrajes;
+  console.log('\n============================================================');
+  console.log(`TOTAL GENERAL:\t\t\t\t\t$${Math.round(totalGeneral)}`);                            console.log('============================================================');                                                                    if (guardarReporte) {                             const reporte = {
+      ancho: ancho,                                   alto: alto,
+      perfil: nombrePerfil,                           vidrio: tipoVidrio,
+      materiales: materiales,                         herrajes: herrajes,
+      totalMateriales: totalMateriales,               totalHerrajes: totalHerrajes,
+      totalGeneral: totalGeneral,                   };
+    fs.writeFileSync('reporte_ventana.json', JSON.stringify(reporte, null, 2));
+    console.log('Reporte guardado en reporte_ventana.json');
+  }
+}
+
+calcularVentana();
